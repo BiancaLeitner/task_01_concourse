@@ -1,5 +1,6 @@
 class Article < ApplicationRecord
-  has_many :comments
+  # if article is deleted, delete comments as well
+  has_many :comments, dependent: :destroy
   # ensure that all articles have a title that is 
   # at least five characters long
   validates :title, presence: true,
