@@ -10,15 +10,22 @@ class ArticlesController < ApplicationController
   end
 
   def new
+    # we need to create the instance because otherwise it would be nil in our view
+    # and the error-validation would throw an error
+    @article = Article.new
   end
 
   def create
     # initialize model with  attributes, map them to db columns and
     @article = Article.new(article_params)
-    # save model in db
-    @article.save
-    # redirect to show action
-    redirect_to @article
+
+     # if saveing model in db was successfull
+    if @article.save
+      # redirect to show action
+      redirect_to @article
+    else
+      render 'new'
+    end
   end
 
   private
