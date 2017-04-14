@@ -1,0 +1,26 @@
+$font-stack: Helvetica, sans-serif;
+$body-color: #f2f5f8;
+$white: '#fff';
+
+body {
+  background: $body-color;
+  font-family: $font-stack;
+  font-size: 15px;
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+}
+
+.app-cont {
+  margin: 0 auto;
+  max-width: 1080px;
+}
+
+.app-cont-thin {
+  background: $white;
+  border-radius: 3px;
+  max-width: 650px;
+  padding: 1em 0;
+}
