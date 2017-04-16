@@ -111,6 +111,8 @@ $ cp ./keys/web/tsa_host_key.pub ./keys/worker
 ```
 
 __get ip of your docker-machine:__
+> Note: Check the IP of your docker-machine everytime you startet it (could have changed)!
+
 ```shell
 $ docker-machine ip default
 ```
@@ -121,6 +123,7 @@ output:
 ```
 
 __set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is, for example:__
+> Note: If the IP of your docker-machine changed you have to set it accordingly again!
 
 ```shell
 $ export CONCOURSE_EXTERNAL_URL=http://192.168.99.100:8080
