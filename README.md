@@ -122,8 +122,8 @@ output:
 
 __set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is, for example:__
 
-```yaml
-CONCOURSE_EXTERNAL_URL: http://192.168.99.100:8080
+```shell
+$ export CONCOURSE_EXTERNAL_URL=http://192.168.99.100:8080
 ```
 
 ### 2.2 Build, (re)create, start, and attach to containers for a service - spin everything up:
