@@ -20,5 +20,9 @@
 # Ignore Byebug command history file.
 .byebug_history
 
+# Ignore keys
+/keys
+
 # Ignore the new version of the docker-compose.yml
 /docker-compose.yml
+
