@@ -88,7 +88,7 @@ $ docker-machine start default
 
 ### 2.1 <a name="setup-docker-compose"></a> Setup docker-compose for Concourse
 
-create a docker-compose.yml file in your project root and add the following to the file:
+create a __docker-compose.yml__ file in your project root and add the following to the file:
 ```yaml
 concourse-db:
   image: postgres:9.5
@@ -293,7 +293,7 @@ target saved
 
 ### 5.1 <a name="run-tests"></a> Run unit tests in Concourse
 
-create a build.yml file in your root directory and add the following to the file:
+create a __build.yml__ file in your root directory and add the following to the file:
 ```yml
 # run task on a Linux worker
 platform: linux
@@ -315,7 +315,7 @@ run:
   path: ./blog/ci/test.sh
 ```
 
-create a folder ci and a new file ci/test.sh in your root directory and add the following to the file:
+create a folder __ci__ and a new file __ci/test.sh__ in your root directory and add the following to the file:
 
 ```sh
 #!/bin/bash
@@ -334,4 +334,65 @@ make test.sh executable
 $ chmod +x ci/test.sh
 ```
 
+execute the build task (run unit tests inside Concourse)
+```shell
+$ fly -t ci execute -c build.yml
+```
+
 ### 5.2 <a name="start-pipeline"></a> Starting a pipeline
+
+create a __ci/pipeline.yml__ file and add the following to the file:
+```yml
+resources:
+- name: blog
+  type: git
+  source:
+    uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+    branch: master
+
+jobs:
+- name: test-app
+  plan:
+  - get: blog
+  - task: tests
+    file: blog/build.yml
+```
+>Explanation: Pipelines are built up from resources and jobs. Resources are external, versioned things such as Git repositories or S3 buckets and jobs are a grouping of resources and tasks that actually do the work in the system.
+
+upload the pipeline:
+```shell
+$ fly -t ci set-pipeline -p blog -c ci/pipeline.yml
+```
+
+*output*
+```shell
+resources:
+  resource blog has been added:
+    name: blog
+    type: git
+    source:
+      branch: master
+      uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+
+jobs:
+  job test-app has been added:
+    name: test-app
+    plan:
+    - get: blog
+    - task: tests
+      file: blog/build.yml
+
+apply configuration? [yN]:
+```
+--> answer with y
+
+*output*
+```shell
+pipeline created!
+you can view your pipeline here: http://192.168.99.100:8080/teams/main/pipelines/blog
+
+the pipeline is currently paused. to unpause, either:
+  - run the unpause-pipeline command
+  - click play next to the pipeline in the web ui
+```
+
