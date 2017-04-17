@@ -5,4 +5,6 @@ class Article < ApplicationRecord
   # at least five characters long
   validates :title, presence: true,
                     length: {minimum: 5}
+  validates :text, presence: true,
+                   length: {minimum: 100}
 end

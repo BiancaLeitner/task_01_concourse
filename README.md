@@ -1,16 +1,20 @@
 # Test the create part in a concourse job with capybara
 
 ## Table of contents
-1. [Create a Docker Machine 🔨](#docker-machine)
+1. [__Create a Docker Machine__ 🔨](#docker-machine)
     <br/> 1.1 [List available machines](#list-machines)
     <br/> 1.2 [Create a new machine](#create-machine)
     <br/> 1.3 [Set the environment commands for your new machine](#set-env)
     <br/> 1.4 [Start and stop machines](#start-stop)
-2. [Setup Concourse for the 1st time 🛠](#setup-concourse)
+2. [__Setup Concourse for the 1st time__ 🛠](#setup-concourse)
   <br/> 2.1 [Setup docker-compose for concourse](#setup-docker-compose)
   <br/> 2.2 [Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up)
   <br/> 2.3 [Setup the fly-CLI tool](#setup-fly)
-3. [Start Concourse after Setup 🏁](#start-concourse)
+3. [__Start Concourse after Setup__ 🏁](#start-concourse)
+4. [__Create Tests with Capybara and RSpec__ 🐹](#capybara)
+  <br/> 4.1 [Install Capybara and RSpec](#install)
+  <br/> 4.2 [Set up Test for create-Action](#setup-test)
+  <br/> 4.3 [Run the test](#run-test)
 
 
 ## 1. <a name="docker-machine"></a> Create a Docker Machine 🔨
@@ -31,7 +35,7 @@ $ docker-machine ls
 $ docker-machine create --driver=virtualbox default
 ```
 
-__check if machine was created:__
+check if machine was created:
 ```shell
 $ docker-machine ls
 ```
@@ -57,7 +61,7 @@ export DOCKER_MACHINE_NAME="default"
 # eval $(docker-machine env default)
 ```
 
-__Connect your shell to the new machine__
+Connect your shell to the new machine
 ```shell
 $ eval "$(docker-machine env default)"
 ```
@@ -74,7 +78,7 @@ $ docker-machine start default
 
 ### 2.1 <a name="setup-docker-compose"></a> Setup docker-compose for Concourse
 
-__Create a docker-compose.yml file in your project root:__
+Create a docker-compose.yml file in your project root:
 ```yaml
 concourse-db:
   image: postgres:9.5
@@ -107,7 +111,7 @@ concourse-worker:
     CONCOURSE_TSA_HOST: concourse-web
 ```
 
-__run the following to generate the necessary keys:__
+run the following to generate the necessary keys:
 ```shell
 $ mkdir -p keys/web keys/worker
 
@@ -120,7 +124,7 @@ $ cp ./keys/worker/worker_key.pub ./keys/web/authorized_worker_keys
 $ cp ./keys/web/tsa_host_key.pub ./keys/worker
 ```
 
-__get ip of your docker-machine:__
+get ip of your docker-machine:
 ```shell
 $ docker-machine ip default
 ```
@@ -130,7 +134,7 @@ $ docker-machine ip default
 192.168.99.100
 ```
 
-__set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is, for example:__
+set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is, for example:
 ```shell
 $ export CONCOURSE_EXTERNAL_URL=http://192.168.99.100:8080
 ```
@@ -159,33 +163,107 @@ $ sudo chmod 0755 /usr/local/bin/fly
 
 ## 3. <a name="start-concourse"></a> Start Concourse after Setup 🏁
 
-__start your Docker Machine__
+start your Docker Machine
 ```shell
 $ docker-machine start <name-of-your-machine>
 ```
 
-__set environment variables of your machine__
+set environment variables of your machine
 ```shell
 $ docker-machine env <name-of-your-machine>
 ```
 
-__execute each of those export commands__
+execute each of those export commands
 ```shell
 $ eval "$(docker-machine env <name-of-your-machine>)"
 ```
 
-__get IP of your docker-machine__
+get IP of your docker-machine
 ```shell
 $ docker-machine ip <name-of-your-machine>
 ```
 
-__set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is__
+set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is
 ```shell
 $ export CONCOURSE_EXTERNAL_URL=http://<your-machines-ip>:8080
 ```
 
-__build, (re)create, start, and attach to containers for a service - spin everything up__
+build, (re)create, start, and attach to containers for a service - spin everything up
 ```shell
 $ docker-compose up
 ```
 --> browse to your configured external URL - Concourse is up and running 😀
+
+## 4. <a name="capybara"></a> Create Tests with Capybara and RSpec 🐹
+
+### 4.1 <a name="install"></a> Install Capybara and RSpec
+
+add this to your Gemfile:
+```ruby
+group :development, :test do
+  gem 'rspec-rails', '~> 3.0'
+end
+ 
+group :test do
+  gem 'capybara'
+end
+```
+
+run:
+```shell
+$ bundle install
+$ rails generate rspec:install
+```
+> Note: The second command should create spec/spec_helper.rb and spec/rails_helper.rb files.
+
+Add following to spec/rails_helper.rb:
+```ruby
+$ require 'capybara/rails'
+```
+
+### 4.2 <a name="setup-test"></a> Set up Test for create-Action
+
+The feature we will be testing is the create-Action of our app (= adding new articles to the blog).
+
+Start by defining a scenario for this feature's test:
+```ruby
+# 1. Go to root path (there will be a button to add a new article)
+# 2. Click on the "New article" button
+# 3. Fill out the form
+# 4. Submit the form
+# 5. See the 'show' page of created article
+```
+
+Create a new folder __spec/articles__ and a new file __spec/articles/creating_article_spec.rb__ and add the following to the file:
+```ruby
+require 'rails_helper.rb'
+
+feature 'Creating article' do
+  scenario 'can create an article' do
+    # 1. Go to root path (there will be a button to add a new article)
+    visit '/'
+    # 2. Click on the "New article" button
+    click_link 'New article'
+    # 3. Fill out the form - add a title  with at least 5 characters and a text with at least 100 characters
+    fill_in 'Title', :with => 'Lorem'
+    fill_in 'Text', :with => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut l'
+    # 4. Submit the form
+    click_button 'Create Article'
+    # 5. See the 'show' page of created article
+    expect(page).to have_content('Lorem ipsum dolor sit amet')
+  end
+end
+```
+
+### 4.3 <a name="run-test"></a> Run the test
+```shell
+$ rspec spec/articles/creating_article_spec.rb
+```
+
+*output:*
+```shell
+.
+
+Finished in 0.40847 seconds (files took 4.21 seconds to load)
+1 example, 0 failures
+```
