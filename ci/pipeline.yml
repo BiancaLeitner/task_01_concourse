@@ -1,0 +1,13 @@
+resources:
+- name: blog
+  type: git
+  source:
+    uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+    branch: master
+
+jobs:
+- name: test-app
+  plan:
+  - get: blog
+  - task: tests
+    file: blog/build.yml

@@ -5,14 +5,14 @@
 * bonus: test if there are more brakeman warnings than in the previous commit.
 
 ## Table of contents
-[__1. Create a Docker Machine__ 🔨](#docker-machine)
+[__1. Create a Docker Machine__ 🛠](#docker-machine)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.1 List available machines](#list-machines)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Create a new machine](#create-machine)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.3 Set the environment commands for your new machine](#set-env)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.4 Start and stop machines](#start-stop)
 
 [__2. Setup Concourse for the 1st time__ 🛠](#setup-concourse)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup docker-compose for concourse](#setup-docker-compose)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup docker-compose for Concourse](#setup-docker-compose)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Setup the fly-CLI tool](#setup-fly)
 
@@ -23,8 +23,11 @@
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Set up Test for create-Action](#setup-test)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Run the test](#run-test)
 
+[__5. Build a Concourse Pipeline__ 🛠](#build-pipeline)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Run unit tests in Concourse](#run-tests)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Starting a pipeline](#start-pipeline)
 
-## 1. <a name="docker-machine"></a> Create a Docker Machine 🔨
+## 1. <a name="docker-machine"></a> Create a Docker Machine 🛠
 >Note: Pre-Requirements: Docker Engine and Docker Compose are installed
 
 ### 1.1 <a name="list-machines"></a> List available machines 
@@ -68,7 +71,7 @@ export DOCKER_MACHINE_NAME="default"
 # eval $(docker-machine env default)
 ```
 
-Connect your shell to the new machine
+connect your shell to the new machine
 ```shell
 $ eval "$(docker-machine env default)"
 ```
@@ -85,7 +88,7 @@ $ docker-machine start default
 
 ### 2.1 <a name="setup-docker-compose"></a> Setup docker-compose for Concourse
 
-Create a docker-compose.yml file in your project root:
+create a docker-compose.yml file in your project root and add the following to the file:
 ```yaml
 concourse-db:
   image: postgres:9.5
@@ -223,7 +226,7 @@ $ rails generate rspec:install
 ```
 > Note: The second command should create spec/spec_helper.rb and spec/rails_helper.rb files.
 
-Add following to spec/rails_helper.rb:
+add following to spec/rails_helper.rb:
 ```ruby
 $ require 'capybara/rails'
 ```
@@ -232,7 +235,7 @@ $ require 'capybara/rails'
 
 The feature we will be testing is the create-Action of our app (= adding new articles to the blog).
 
-Start by defining a scenario for this feature's test:
+start by defining a scenario for this feature's test:
 ```ruby
 # 1. Go to root path (there will be a button to add a new article)
 # 2. Click on the "New article" button
@@ -241,7 +244,7 @@ Start by defining a scenario for this feature's test:
 # 5. See the 'show' page of created article
 ```
 
-Create a new folder __spec/articles__ and a new file __spec/articles/creating_article_spec.rb__ and add the following to the file:
+create a new folder __spec/articles__ and a new file __spec/articles/creating_article_spec.rb__ and add the following to the file:
 ```ruby
 require 'rails_helper.rb'
 
@@ -274,3 +277,61 @@ $ rspec spec/articles/creating_article_spec.rb
 Finished in 0.40847 seconds (files took 4.21 seconds to load)
 1 example, 0 failures
 ```
+
+## 5. <a name="build-pipeline"></a> Build a Concourse Pipeline 🛠
+
+target and log in to Concourse (with username and Password defined in docker-compose.yml)
+```shell
+$ fly -t ci login -c <your concourse URL>
+```
+> Explanation: The -t flag is the name we'll use to refer to this instance in the future. The -c flag is the concourse URL that we'd like to target.
+
+*output*
+```shell
+target saved
+```
+
+### 5.1 <a name="run-tests"></a> Run unit tests in Concourse
+
+create a build.yml file in your root directory and add the following to the file:
+```yml
+# run task on a Linux worker
+platform: linux
+
+# declare the image to use for the task's container
+image_resource:
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2.3.3
+
+# define a set of things that we need in order for our task to run
+inputs:
+# ... in this case blog source code in order to run tests on it
+- name: blog
+
+# define how concourse should run the test
+run:
+  path: ./blog/ci/test.sh
+```
+
+create a folder ci and a new file ci/test.sh in your root directory and add the following to the file:
+
+```sh
+#!/bin/bash
+
+set -e -x
+
+pushd blog
+  bundle install
+  bundle exec rspec
+popd
+```
+> Explanation: The #!/bin/bash is a shebang line that tells the operating system that when we execute this file we should run it using the /bin/bash interpreter. The set -e -x line is setting a few bash options. Namely, -e make it so the entire script fails if a single command fails (which is generally desirable in CI). By default, a script will keep executing if something fails. The -x means that each command should be printed as it's run (also desirable in CI).
+
+make test.sh executable
+```shell
+$ chmod +x ci/test.sh
+```
+
+### 5.2 <a name="start-pipeline"></a> Starting a pipeline

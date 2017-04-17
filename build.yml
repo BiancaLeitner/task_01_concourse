@@ -1,0 +1,18 @@
+# run task on a Linux worker
+platform: linux
+
+# declare the image to use for the task's container
+image_resource:
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2.3.0
+
+# define a set of things that we need in order for our task to run
+inputs:
+# ... in this case blog source code in order to run tests on it
+- name: blog
+
+# define how concourse should run the test
+run:
+  path: ./blog/ci/test.sh
