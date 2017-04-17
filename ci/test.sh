@@ -2,7 +2,7 @@
 
 set -e -x
 
-pushd blog
+pushd task_01_concourse
   bundle install
   bundle exec rspec
 popd

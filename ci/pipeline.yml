@@ -1,13 +1,14 @@
 resources:
-- name: blog
+- name: task_01_concourse
   type: git
   source:
-    uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+    uri: https://github.com/BiancaLeitner/task_01_concourse.git
     branch: master
 
 jobs:
 - name: test-app
   plan:
-  - get: blog
+  - get: task_01_concourse
+    trigger: true
   - task: tests
-    file: blog/build.yml
+    file: task_01_concourse/build.yml
