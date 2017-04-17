@@ -1,21 +1,37 @@
 # Test the create part in a concourse job with capybara
 
-## 1. Create a Docker Machine
+## Table of contents
+1. [Create a Docker Machine 🔨](#docker-machine)
+    <br/> 1.1 [List available machines](#list-machines)
+    <br/> 1.2 [Create a new machine](#create-machine)
+    <br/> 1.3 [Get the environment commands for your new VM](#get-env)
+    <br/> 1.4 [Connect your shell to the new machine](#connect-shell)
+    <br/> 1.5 [Start and stop machines](#start-stop)
+2. [Setup Concourse for the 1st time 🛠](#setup-concourse)
+  <br/> 2.1 [Create a docker-compose.yml file in your project root](#create-docker-yml)
+  <br/> 2.2 [Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up1)
+  <br/> 2.3 [Setup the fly-CLI tool](#setup-fly)
+3. [Start Concourse after Setup 🏁](#start-concourse)
+ <br/> 3.1 [Start your Docker Machine](#start-machine)
+ <br/> 3.2 [Set environment variables of your machine](#set-env)
+ <br/> 3.3 [Set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is](#set-ip)
+ <br/> 3.4 [Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up2)
+
+
+## 1. <a name="docker-machine"></a> Create a Docker Machine 
 >Note: Pre-Requirements: Docker Engine and Docker Compose are installed
 
-### 1.1 List available machines:
-
+### 1.1 <a name="list-machines"></a> List available machines 
 ```shell
 $ docker-machine ls
 ```
 
-output:
+*output*:
 ```shell
  NAME   ACTIVE   DRIVER   STATE   URL   SWARM   DOCKER   ERRORS
 ```
 
-### 1.2 Create a new machine:
-
+### 1.2 <a name="create-machine"></a> Create a new machine
 ```shell
 $ docker-machine create --driver=virtualbox default
 ```
@@ -25,19 +41,19 @@ __check if machine was created:__
 $ docker-machine ls
 ```
 
-output:
+*output*:
 ```shell
 NAME      ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
 default   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce
 ```
 
-### 1.3 Get the environment commands for your new VM
+### 1.3 <a name="get-env"></a> Get the environment commands for your new VM
 
 ```shell
 $ docker-machine env default
 ```
 
-output:
+*output*:
 ```shell
 export DOCKER_TLS_VERIFY="1"
 export DOCKER_HOST="tcp://192.168.99.100:2376"
@@ -47,23 +63,23 @@ export DOCKER_MACHINE_NAME="default"
 # eval $(docker-machine env default)
 ```
 
-### 1.4 Connect your shell to the new machine.
+### 1.4 <a name="connect-shell"></a> Connect your shell to the new machine
 
 ```shell
 $ eval "$(docker-machine env default)"
 ```
 
-### 1.5 Start and stop machines
+### 1.5 <a name="start-stop"></a> Start and stop machines
 
 ```shell
 $ docker-machine stop default
 $ docker-machine start default
 ```
 
-## 2. Setup Concourse
+## 2. <a name="setup-concourse"></a> Setup Concourse for the 1st time
 >Note: find the complete installation-guide <a href="https://concourse.ci/docker-repository.html" target="_blank">here</a>
 
-### 2.1 Create a docker-compose.yml file in your project root
+### 2.1 <a name="create-docker-yml"></a> Create a docker-compose.yml file in your project root
 
 ```yaml
 concourse-db:
@@ -111,25 +127,21 @@ $ cp ./keys/web/tsa_host_key.pub ./keys/worker
 ```
 
 __get ip of your docker-machine:__
-> Note: Check the IP of your docker-machine everytime you startet it (could have changed)!
-
 ```shell
 $ docker-machine ip default
 ```
 
-output:
+*output*:
 ```shell
 192.168.99.100
 ```
 
 __set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is, for example:__
-> Note: If the IP of your docker-machine changed you have to set it accordingly again!
-
 ```shell
 $ export CONCOURSE_EXTERNAL_URL=http://192.168.99.100:8080
 ```
 
-### 2.2 Build, (re)create, start, and attach to containers for a service - spin everything up:
+### 2.2 <a name="spin-up1"></a> Build, (re)create, start, and attach to containers for a service - spin everything up
 
 ```shell
 $ docker-compose up
@@ -139,7 +151,7 @@ $ docker-compose up
 * log in with the username _concourse_ and password _changeme_.
 
 
-### 2.3 Setup the fly-CLI tool
+### <a name="setup-fly"></a> 2.3 Setup the fly-CLI tool
 
 * click to download the fly CLI appropriate for your operating system
 
@@ -151,5 +163,46 @@ $ sudo mv ~/Downloads/fly /usr/local/bin
 $ sudo chmod 0755 /usr/local/bin/fly
 ```
 
+## 3. <a name="start-concourse"></a> Start Concourse after Setup
 
+### 3.1 <a name="start-machine"></a> Start your Docker Machine
+```shell
+$ docker-machine start <name-of-your-machine>
+```
 
+### 3.2 <a name="set-env"></a> Set environment variables of your machine
+```shell
+$ docker-machine env <name-of-your-machine>
+```
+
+*output*
+```shell
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/Users/Bee/.docker/machine/machines/default"
+export DOCKER_MACHINE_NAME="default"
+# Run this command to configure your shell:
+# eval $(docker-machine env default)
+```
+
+__execute each of those export commands__
+```shell
+$ eval "$(docker-machine env <name-of-your-machine>)"
+```
+
+### 3.4 <a name="set-ip"></a> Set CONCOURSE_EXTERNAL_URL to whatever your docker-machine's IP is
+__Get IP of your docker-machine__
+```shell
+$ docker-machine ip <name-of-your-machine>
+```
+
+__set IP__
+```shell
+$ export CONCOURSE_EXTERNAL_URL=http://<your-machines-ip>:8080
+```
+
+### 3.4 <a name="spin-up2"></a> Build, (re)create, start, and attach to containers for a service - spin everything up
+```shell
+$ docker-compose up
+```
+--> browse to your configured external URL - Concourse is up and running 😀
