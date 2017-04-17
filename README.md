@@ -1,4 +1,4 @@
-# Übung 1 - Markus Raidel
+# Task 1 - Markus Raidel
 * create a Rails app with scaffold for CRUD resource
 * test the create part in a concourse job with Capybara
 * use brakeman to check the app in a concourse job (it should fail if there are any warnings)
