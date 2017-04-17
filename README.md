@@ -1,20 +1,27 @@
-# Test the create part in a concourse job with capybara
+# Übung 1 - Markus Raidel
+* create a Rails app with scaffold for CRUD resource
+* test the create part in a concourse job with Capybara
+* use brakeman to check the app in a concourse job (it should fail if there are any warnings)
+* bonus: test if there are more brakeman warnings than in the previous commit.
 
 ## Table of contents
-1. [__Create a Docker Machine__ 🔨](#docker-machine)
-    <br/> 1.1 [List available machines](#list-machines)
-    <br/> 1.2 [Create a new machine](#create-machine)
-    <br/> 1.3 [Set the environment commands for your new machine](#set-env)
-    <br/> 1.4 [Start and stop machines](#start-stop)
-2. [__Setup Concourse for the 1st time__ 🛠](#setup-concourse)
-  <br/> 2.1 [Setup docker-compose for concourse](#setup-docker-compose)
-  <br/> 2.2 [Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up)
-  <br/> 2.3 [Setup the fly-CLI tool](#setup-fly)
-3. [__Start Concourse after Setup__ 🏁](#start-concourse)
-4. [__Create Tests with Capybara and RSpec__ 🐹](#capybara)
-  <br/> 4.1 [Install Capybara and RSpec](#install)
-  <br/> 4.2 [Set up Test for create-Action](#setup-test)
-  <br/> 4.3 [Run the test](#run-test)
+[__1. Create a Docker Machine__ 🔨](#docker-machine)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.1 List available machines](#list-machines)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Create a new machine](#create-machine)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.3 Set the environment commands for your new machine](#set-env)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[1.4 Start and stop machines](#start-stop)
+
+[__2. Setup Concourse for the 1st time__ 🛠](#setup-concourse)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup docker-compose for concourse](#setup-docker-compose)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Setup the fly-CLI tool](#setup-fly)
+
+[__3. Start Concourse after Setup__ 🏁](#start-concourse)
+
+[__4. Create Test with Capybara and RSpec__ 🐹](#capybara)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.1 Install Capybara and RSpec](#install)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Set up Test for create-Action](#setup-test)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Run the test](#run-test)
 
 
 ## 1. <a name="docker-machine"></a> Create a Docker Machine 🔨
@@ -194,7 +201,7 @@ $ docker-compose up
 ```
 --> browse to your configured external URL - Concourse is up and running 😀
 
-## 4. <a name="capybara"></a> Create Tests with Capybara and RSpec 🐹
+## 4. <a name="capybara"></a> Create Test with Capybara and RSpec 🐹
 
 ### 4.1 <a name="install"></a> Install Capybara and RSpec
 
