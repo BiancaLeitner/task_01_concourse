@@ -1,5 +1,0 @@
----
-applications:
-- name: simple-rails-web-app
-  disk: 256M
-  memory: 128M
