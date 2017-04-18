@@ -55,7 +55,7 @@ jobs:
         args:
           - -exc
           - |
-            cat > /root/.netrc <<EOF
+            cat > ~/.netrc <<EOF
             machine git.heroku.com
               login $HEROKU_EMAIL
               password $HEROKU_TOKEN
