@@ -307,7 +307,7 @@ image_resource:
 
 # define a set of things that we need in order for our task to run
 inputs:
-# ... in this case blog source code in order to run tests on it
+# ... in this case task_01_concourse source code in order to run tests on it
 - name: task_01_concourse
 
 # define how concourse should run the test
