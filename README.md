@@ -73,7 +73,7 @@ export DOCKER_MACHINE_NAME="default"
 
 connect your shell to the new machine
 ```shell
-$ eval "$(docker-machine env default)"
+$ eval $(docker-machine env default)
 ```
 
 ### 1.4 <a name="start-stop"></a> Start and stop machines
@@ -185,7 +185,7 @@ $ docker-machine env <name-of-your-machine>
 
 execute each of those export commands
 ```shell
-$ eval "$(docker-machine env <name-of-your-machine>)"
+$ eval $(docker-machine env <name-of-your-machine>)
 ```
 
 get IP of your docker-machine
@@ -303,16 +303,16 @@ image_resource:
   type: docker-image
   source:
     repository: ruby
-    tag: 2.3.3
+    tag: 2.3.0
 
 # define a set of things that we need in order for our task to run
 inputs:
 # ... in this case blog source code in order to run tests on it
-- name: blog
+- name: task_01_concourse
 
 # define how concourse should run the test
 run:
-  path: ./blog/ci/test.sh
+  path: ./task_01_concourse/ci/test.sh
 ```
 
 create a folder __ci__ and a new file __ci/test.sh__ in your root directory and add the following to the file:
@@ -322,7 +322,7 @@ create a folder __ci__ and a new file __ci/test.sh__ in your root directory and 
 
 set -e -x
 
-pushd blog
+pushd task_01_concourse
   bundle install
   bundle exec rspec
 popd
@@ -339,48 +339,64 @@ execute the build task (run unit tests inside Concourse)
 $ fly -t ci execute -c build.yml
 ```
 
+*output*
+```shell
++ bundle exec rspec
+.
+
+Finished in 0.83371 seconds (files took 8.19 seconds to load)
+1 example, 0 failures
+
++ popd
+/tmp/build/e55deab7
+succeeded
+```
+
 ### 5.2 <a name="start-pipeline"></a> Starting a pipeline
 
 create a __ci/pipeline.yml__ file and add the following to the file:
 ```yml
 resources:
-- name: blog
+- name: task_01_concourse
   type: git
   source:
-    uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+    uri: https://github.com/BiancaLeitner/task_01_concourse.git
     branch: master
 
 jobs:
 - name: test-app
   plan:
-  - get: blog
+  - get: task_01_concourse
+    # any new version will trigger the job
+    trigger: true
   - task: tests
-    file: blog/build.yml
+    file: task_01_concourse/build.yml
 ```
 >Explanation: Pipelines are built up from resources and jobs. Resources are external, versioned things such as Git repositories or S3 buckets and jobs are a grouping of resources and tasks that actually do the work in the system.
 
 upload the pipeline:
 ```shell
-$ fly -t ci set-pipeline -p blog -c ci/pipeline.yml
+$ fly -t ci set-pipeline -p task_01_concourse -c ci/pipeline.yml
 ```
 
 *output*
 ```shell
 resources:
-  resource blog has been added:
-    name: blog
+  resource task_01_concourse has been added:
+    name: task_01_concourse
     type: git
     source:
       branch: master
-      uri: https://github.com/BiancaLeitner/continuous_delivery_assignments/tree/master/02_testing_CD-pipeline/blog
+      uri: https://github.com/BiancaLeitner/task_01_concourse.git
 
 jobs:
   job test-app has been added:
     name: test-app
     plan:
-    - get: blog
+    - get: task_01_concourse
+      trigger: true
     - task: tests
-      file: blog/build.yml
+      file: task_01_concourse/build.yml
 
 apply configuration? [yN]:
 ```
@@ -389,10 +405,11 @@ apply configuration? [yN]:
 *output*
 ```shell
 pipeline created!
-you can view your pipeline here: http://192.168.99.100:8080/teams/main/pipelines/blog
+you can view your pipeline here: http://192.168.99.100:8080/teams/main/pipelines/task_01_concourse
 
 the pipeline is currently paused. to unpause, either:
   - run the unpause-pipeline command
   - click play next to the pipeline in the web ui
 ```
+>Note: If you are not yet logged in the Concourse-Web-UI do so - otherwise you won't be able to see the pipeline!
 

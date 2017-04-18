@@ -9,6 +9,7 @@ jobs:
 - name: test-app
   plan:
   - get: task_01_concourse
+    # any new version will trigger the job
     trigger: true
   - task: tests
     file: task_01_concourse/build.yml
