@@ -25,5 +25,3 @@
 
 # Ignore the new version of the docker-compose.yml
 /docker-compose.yml
-
-/credentials.yml
