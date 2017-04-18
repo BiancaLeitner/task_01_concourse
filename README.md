@@ -14,7 +14,7 @@
 [__2. Setup Concourse for the 1st time__ 🛠](#setup-concourse)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Setup docker-compose for Concourse](#setup-docker-compose)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.2 Build, (re)create, start, and attach to containers for a service - spin everything up](#spin-up)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Setup the fly-CLI tool](#setup-fly)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[2.3 Setup the Fly-CLI tool](#setup-fly)
 
 [__3. Start Concourse after Setup__ 🏁](#start-concourse)
 
@@ -159,9 +159,10 @@ $ docker-compose up
 * log in with the username _concourse_ and password _changeme_.
 
 
-### <a name="setup-fly"></a> 2.3 Setup the fly-CLI tool
+### 2.3 <a name="setup-fly"></a> Setup the Fly-CLI tool
+>Note: a list of all available Fly-Cli commands can be found [here!](https://concourse.ci/fly-cli.html)
 
-* click to download the fly CLI appropriate for your operating system
+* click to download the Fly-CLI appropriate for your operating system
 
 * copy the fly binary into your path ($PATH), such as /usr/local/bin or ~/bin. 
 <br/>Don't forget to also make it executable:
