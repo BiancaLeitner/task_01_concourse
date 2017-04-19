@@ -5,6 +5,9 @@ set -e -x
 pushd task_01_concourse
   bundle install
   bundle exec rspec
+  git init
+  git config user.name "BiancaLeitner"
+  git config user.email "bianca.leitner@beecoding.at"
   # copy old brakeman file from branch
   git checkout brakeman -- brakeman_output.json
   # compare
