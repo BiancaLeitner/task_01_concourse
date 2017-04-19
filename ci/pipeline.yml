@@ -11,25 +11,8 @@ jobs:
   - get: git-repository
     trigger: true
   - task: run-tests
-    config:
-      platform: linux
-
-      inputs:
-      - name: git-repository
-
-      image_resource:
-        type: docker-image
-        source: { repository: ruby, tag: 2.3.3 }
-
-      run:
-        path: sh
-        dir: git-repository
-        args:
-          - -exc
-          - |
-            bundle install
-            rspec
-            brakeman
+    file: task_01_concourse/ci/commit_build.yml
+   
 - name: deploy-stage
   serial: true
   plan:
@@ -40,25 +23,4 @@ jobs:
     params:
       HEROKU_EMAIL: {{heroku_email}}
       HEROKU_TOKEN: {{heroku_token}}
-    config:
-      platform: linux
-
-      image_resource:
-        type: docker-image
-        source: { repository: concourse/bosh-cli }
-
-      inputs:
-        - name: git-repository
-
-      run:
-        path: sh
-        dir: git-repository
-        args:
-          - -exc
-          - |
-            cat > ~/.netrc <<EOF
-            machine git.heroku.com
-              login $HEROKU_EMAIL
-              password $HEROKU_TOKEN
-            EOF
-            git push https://git.heroku.com/task-01-concourse.git master:refs/heads/master
+    file: task_01_concourse/ci/deploy_build.yml
