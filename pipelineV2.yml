@@ -29,6 +29,7 @@ jobs:
           - |
             bundle install
             rspec
+            breakman
 - name: deploy-stage
   serial: true
   plan:
