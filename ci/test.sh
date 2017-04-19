@@ -14,8 +14,6 @@ pushd task_01_concourse
   # create new brakeman file
   brakeman -o brakeman_output.json
   if [ -n "$(git status --porcelain)" ]; then
-    git config --global user.email "bianca.leitner@beecoding.at"
-    git config --global user.name "BiancaLeitner"
     git add brakeman_output.json
     # commit and push it to the branch
     git commit -m "new version of brakeman-file"
