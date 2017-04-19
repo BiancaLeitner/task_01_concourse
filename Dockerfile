@@ -16,8 +16,6 @@ RUN bundle install
 
 COPY . /usr/src/app
 
-RUN echo "RACK_ENV=production" >>.env
-RUN echo "PORT=3000" >> .env
-#RUN RAILS_ENV=production
+RUN RAILS_ENV=production
 
 CMD ["bundle", "exec", "ruby", "app.rb", "-o", "0.0.0.0"]
