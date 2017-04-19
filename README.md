@@ -358,6 +358,7 @@ set -e -x
 pushd task_01_concourse
   bundle install
   bundle exec rspec
+  bundle exec brakeman
 popd
 ```
 > Explanation: The #!/bin/bash is a shebang line that tells the operating system that when we execute this file we should run it using the /bin/bash interpreter. The set -e -x line is setting a few bash options. Namely, -e make it so the entire script fails if a single command fails (which is generally desirable in CI). By default, a script will keep executing if something fails. The -x means that each command should be printed as it's run (also desirable in CI).
