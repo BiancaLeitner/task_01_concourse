@@ -11,9 +11,6 @@ pushd task_01_concourse
   brakeman --compare brakeman_output.json
   # switch to branch
   git checkout brakeman
-  git init
-  git config user.name "BiancaLeitner"
-  git config user.email "bianca.leitner@beecoding.at"
   # create new brakeman file
   brakeman -o brakeman_output.json
   if [ -n "$(git status --porcelain)" ]; then
