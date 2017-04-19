@@ -6,7 +6,7 @@ image_resource:
     repository: concourse/bosh-cli
 
 inputs:
-- name: git-repository
+- name: task_01_concourse
 
 run:
   path: ./task_01_concourse/ci/deploy.sh

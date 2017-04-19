@@ -2,7 +2,7 @@
 
 set -e -x
 
-pushd git-repository
+pushd task_01_concourse
   bundle install
   rspec
   brakeman

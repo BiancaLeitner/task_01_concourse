@@ -26,4 +26,5 @@
 # Ignore the new version of the docker-compose.yml
 /docker-compose.ymlcredentials.yml
 
-/credentials.yml.env
+# Ignore credentials
+/_ci/credentials.yml

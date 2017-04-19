@@ -27,8 +27,9 @@
 
 
 [__6. Build a Concourse Pipeline__ 🛠](#build-pipeline)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Run unit tests in Concourse](#run-tests)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Starting a pipeline](#start-pipeline)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Create yml-file for commit-stage (run unit tests in Concourse)](#run-tests)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Create yml-file for deploy-stage](#deploy-stage)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.3 Start a pipeline (wrap everything up)](#start-pipeline)
 
 ## 1. <a name="docker-machine"></a> Create a Docker Machine 🛠
 >Note: Pre-Requirements: Docker Engine and Docker Compose are installed
@@ -324,9 +325,9 @@ $ fly -t ci login -c <your concourse URL>
 target saved
 ```
 
-### 6.1 <a name="run-tests"></a> Run unit tests in Concourse
+### 6.1 <a name="run-tests"></a> Create yml-file for commit-stage (run unit tests in Concourse)
 
-create a __build.yml__ file in your root directory and add the following to the file:
+create a new folder __ci__ and a new __ci/commit_build.yml__ file and add the following to the file:
 ```yml
 # run task on a Linux worker
 platform: linux
@@ -340,7 +341,7 @@ image_resource:
 
 # define a set of things that we need in order for our task to run
 inputs:
-# ... in this case task_01_concourse source code in order to run tests on it
+# ... in this case blog source code in order to run tests on it
 - name: task_01_concourse
 
 # define how concourse should run the test
@@ -348,7 +349,7 @@ run:
   path: ./task_01_concourse/ci/test.sh
 ```
 
-create a folder __ci__ and a new file __ci/test.sh__ in your root directory and add the following to the file:
+create a new __ci/test.sh__ file and add the following to the file:
 
 ```sh
 #!/bin/bash
@@ -357,8 +358,8 @@ set -e -x
 
 pushd task_01_concourse
   bundle install
-  bundle exec rspec
-  bundle exec brakeman
+  rspec
+  brakeman
 popd
 ```
 > Explanation: The #!/bin/bash is a shebang line that tells the operating system that when we execute this file we should run it using the /bin/bash interpreter. The set -e -x line is setting a few bash options. Namely, -e make it so the entire script fails if a single command fails (which is generally desirable in CI). By default, a script will keep executing if something fails. The -x means that each command should be printed as it's run (also desirable in CI).
@@ -368,25 +369,92 @@ make test.sh executable
 $ chmod +x ci/test.sh
 ```
 
-execute the build task (run unit tests inside Concourse)
+execute the commit_build task (run unit tests inside Concourse)
 ```shell
-$ fly -t ci execute -c build.yml
+$ fly -t ci execute -c ci/commit_build.yml
 ```
 
 *output*
 ```shell
-+ bundle exec rspec
++ rspec
 .
 
-Finished in 0.83371 seconds (files took 8.19 seconds to load)
+Finished in 0.3907 seconds (files took 1.91 seconds to load)
 1 example, 0 failures
+.
+.
+.
++ brakeman
+.
+.
+.
++SUMMARY+
+
++-------------------+-------+
+| Scanned/Reported  | Total |
++-------------------+-------+
+| Controllers       | 4     |
+| Models            | 3     |
+| Templates         | 10    |
+| Errors            | 0     |
+| Security Warnings | 0 (0) |
++-------------------+-------+
+
+
 
 + popd
 /tmp/build/e55deab7
 succeeded
 ```
 
-### 6.2 <a name="start-pipeline"></a> Start a pipeline
+### 6.2 <a name="deploy-stage"></a> Create yml-file for deploy-stage (deploy app to Heroku)
+
+create a new __ci/deploy_build.yml__ file and add the following to the file:
+```yml
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: concourse/bosh-cli
+
+inputs:
+- name: task_01_concourse
+
+run:
+  path: ./task_01_concourse/ci/deploy.sh
+```
+
+create a new __ci/deploy.sh__ file and add the following to the file:
+```shell
+#!/bin/bash
+
+set -e -x
+
+pushd task_01_concourse
+cat > ~/.netrc <<EOF
+  machine git.heroku.com
+    login $HEROKU_EMAIL
+    password $HEROKU_TOKEN
+EOF
+  git push https://git.heroku.com/task-01-concourse.git master:refs/heads/master
+popd
+```
+
+make test.sh executable
+```shell
+$ chmod +x ci/deploy.sh
+```
+
+create a new __ci/credentials.yml__ file and add the following to the file:
+```yml
+heroku_email: your-heroku-email
+heroku_token: your-heroku-token
+```
+>Note: You can find a token to use on the “Account” page (in the “API Key” section) on your dashboard
+
+
+### 6.3 <a name="start-pipeline"></a> Start a pipeline
 
 create a __ci/pipeline.yml__ file and add the following to the file:
 ```yml
