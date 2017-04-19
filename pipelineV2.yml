@@ -19,7 +19,7 @@ jobs:
 
       image_resource:
         type: docker-image
-        source: { repository: ruby, tag: 2.3.0 }
+        source: { repository: ruby, tag: 2.3.3 }
 
       run:
         path: sh

@@ -1,4 +1,4 @@
-FROM ruby:2.3.0
+FROM ruby:2.3.3
 RUN apt-get update -qq
 RUN apt-get install -y build-essential libpq-dev nodejs
 RUN echo "deb http://ftp.us.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list \
