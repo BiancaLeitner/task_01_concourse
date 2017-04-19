@@ -304,7 +304,7 @@ image_resource:
   type: docker-image
   source:
     repository: ruby
-    tag: 2.3.0
+    tag: 2.3.3
 
 # define a set of things that we need in order for our task to run
 inputs:
