@@ -11,8 +11,8 @@ image_resource:
 # define a set of things that we need in order for our task to run
 inputs:
 # ... in this case blog source code in order to run tests on it
-- name: task_01_concourse
+- name: git-repository
 
 # define how concourse should run the test
 run:
-  path: ./task_01_concourse/ci/test.sh
+  path: git-repository/ci/test.sh

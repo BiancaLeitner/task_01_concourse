@@ -2,7 +2,7 @@
 
 set -e -x
 
-pushd task_01_concourse
+pushd git-repository
 cat > ~/.netrc <<EOF
   machine git.heroku.com
     login $HEROKU_EMAIL
