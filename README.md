@@ -371,44 +371,6 @@ make test.sh executable
 $ chmod +x ci/test.sh
 ```
 
-execute the commit_build task (run unit tests inside Concourse)
-```shell
-$ fly -t ci execute -c ci/commit_build.yml
-```
-
-*output*
-```shell
-+ rspec
-.
-
-Finished in 0.3907 seconds (files took 1.91 seconds to load)
-1 example, 0 failures
-.
-.
-.
-+ brakeman
-.
-.
-.
-+SUMMARY+
-
-+-------------------+-------+
-| Scanned/Reported  | Total |
-+-------------------+-------+
-| Controllers       | 4     |
-| Models            | 3     |
-| Templates         | 10    |
-| Errors            | 0     |
-| Security Warnings | 0 (0) |
-+-------------------+-------+
-
-
-
-+ popd
-/tmp/build/e55deab7
-succeeded
-```
-
 ### 6.2 <a name="deploy-stage"></a> Create files for deploy-stage (deploy app to Heroku)
 
 create a new __ci/deploy_build.yml__ file and add the following to the file:
@@ -507,7 +469,7 @@ $ heroku git:remote -a <name-of-your-heroku-app>
 ```
 >Note: You need to have the <a href="https://devcenter.heroku.com/articles/heroku-cli" target="_blank">Heroku Cli </a>installed on your system.
 
-### 6.4 <a name="start-pipeline"></a> Create a pipeline (wrap everything up
+### 6.4 <a name="start-pipeline"></a> Create a pipeline (wrap everything up)
 
 create a __ci/pipeline.yml__ file and add the following to the file:
 ```yml
