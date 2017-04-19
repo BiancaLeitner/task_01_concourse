@@ -11,7 +11,7 @@ jobs:
   - get: git-repository
     trigger: true
   - task: run-tests
-    file: task_01_concourse/ci/commit_build.yml
+    file: git-repository/ci/commit_build.yml
    
 - name: deploy-stage
   serial: true
@@ -23,4 +23,4 @@ jobs:
     params:
       HEROKU_EMAIL: {{heroku_email}}
       HEROKU_TOKEN: {{heroku_token}}
-    file: task_01_concourse/ci/deploy_build.yml
+    file: git-repository/ci/deploy_build.yml
