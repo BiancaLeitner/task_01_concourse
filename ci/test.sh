@@ -13,6 +13,8 @@ pushd task_01_concourse
   git checkout brakeman
   # create new brakeman file
   brakeman -o brakeman_output.json
+  git config --global user.email "bianca.leitner@beecoding.at"
+  git config --global user.name "BiancaLeitner"
   # commit and push it to the branch
   git commit -m "new version of brakeman-file"
   git push

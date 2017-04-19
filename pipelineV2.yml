@@ -62,3 +62,4 @@ jobs:
               password $HEROKU_TOKEN
             EOF
             git push https://git.heroku.com/task-01-concourse.git master:refs/heads/master
+            heroku run rake db:migrate
