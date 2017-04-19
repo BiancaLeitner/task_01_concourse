@@ -5,4 +5,5 @@ set -e -x
 pushd task_01_concourse
   bundle install
   bundle exec rspec
+  bundle exec brakeman
 popd

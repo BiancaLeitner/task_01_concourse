@@ -23,9 +23,12 @@
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Set up Test for create-Action](#setup-test)
   <br/>&nbsp;&nbsp;&nbsp;&nbsp;[4.3 Run the test](#run-test)
 
-[__5. Build a Concourse Pipeline__ 🛠](#build-pipeline)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Run unit tests in Concourse](#run-tests)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Starting a pipeline](#start-pipeline)
+[__5. Add Brakeman__ 👾](#brakeman)
+
+
+[__6. Build a Concourse Pipeline__ 🛠](#build-pipeline)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Run unit tests in Concourse](#run-tests)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Starting a pipeline](#start-pipeline)
 
 ## 1. <a name="docker-machine"></a> Create a Docker Machine 🛠
 >Note: Pre-Requirements: Docker Engine and Docker Compose are installed
@@ -279,7 +282,36 @@ Finished in 0.40847 seconds (files took 4.21 seconds to load)
 1 example, 0 failures
 ```
 
-## 5. <a name="build-pipeline"></a> Build a Concourse Pipeline 🛠
+## 5. <a name="brakeman"></a> Add Brakeman
+
+Add Brakeman to your Gemfile:
+```ruby
+group :development do
+  gem 'brakeman', :require => false
+end
+```
+
+Test if it works - run:
+```shell
+$ brakeman
+```
+
+*output*
+```shell
++SUMMARY+
+
++-------------------+-------+
+| Scanned/Reported  | Total |
++-------------------+-------+
+| Controllers       | 4     |
+| Models            | 3     |
+| Templates         | 10    |
+| Errors            | 0     |
+| Security Warnings | 0 (0) |
++-------------------+-------+
+```
+
+## 6. <a name="build-pipeline"></a> Build a Concourse Pipeline 🛠
 
 target and log in to Concourse (with username and Password defined in docker-compose.yml)
 ```shell
@@ -292,7 +324,7 @@ $ fly -t ci login -c <your concourse URL>
 target saved
 ```
 
-### 5.1 <a name="run-tests"></a> Run unit tests in Concourse
+### 6.1 <a name="run-tests"></a> Run unit tests in Concourse
 
 create a __build.yml__ file in your root directory and add the following to the file:
 ```yml
@@ -353,7 +385,7 @@ Finished in 0.83371 seconds (files took 8.19 seconds to load)
 succeeded
 ```
 
-### 5.2 <a name="start-pipeline"></a> Starting a pipeline
+### 6.2 <a name="start-pipeline"></a> Start a pipeline
 
 create a __ci/pipeline.yml__ file and add the following to the file:
 ```yml
