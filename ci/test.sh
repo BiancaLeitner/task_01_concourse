@@ -17,7 +17,7 @@ pushd task_01_concourse
   git config --global user.name "BiancaLeitner"
   # commit and push it to the branch
   git commit -m "new version of brakeman-file"
-  git push
+  git push -u origin brakeman
   # return to master
   git checkout master
 popd
