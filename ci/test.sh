@@ -5,15 +5,15 @@ set -e -x
 pushd task_01_concourse
   bundle install
   bundle exec rspec
-  git init
-  git config user.name "BiancaLeitner"
-  git config user.email "bianca.leitner@beecoding.at"
   # copy old brakeman file from branch
   git checkout brakeman -- brakeman_output.json
   # compare
   brakeman --compare brakeman_output.json
   # switch to branch
   git checkout brakeman
+  git init
+  git config user.name "BiancaLeitner"
+  git config user.email "bianca.leitner@beecoding.at"
   # create new brakeman file
   brakeman -o brakeman_output.json
   if [ -n "$(git status --porcelain)" ]; then
