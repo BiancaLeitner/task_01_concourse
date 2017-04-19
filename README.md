@@ -27,9 +27,11 @@
 
 
 [__6. Build a Concourse Pipeline__ 🛠](#build-pipeline)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Create yml-file for commit-stage (run unit tests in Concourse)](#run-tests)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Create yml-file for deploy-stage](#deploy-stage)
-  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.3 Start a pipeline (wrap everything up)](#start-pipeline)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Create files for commit-stage (run unit tests in Concourse)](#run-tests)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Create files for deploy-stage](#deploy-stage)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Create files for deploy-stage](#deploy-stage)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.3 Configure app for Heroku deployment](#heroku)
+  <br/>&nbsp;&nbsp;&nbsp;&nbsp;[6.4 Create a pipeline (wrap everything up)](#start-pipeline)
 
 ## 1. <a name="docker-machine"></a> Create a Docker Machine 🛠
 >Note: Pre-Requirements: Docker Engine and Docker Compose are installed
@@ -325,7 +327,7 @@ $ fly -t ci login -c <your concourse URL>
 target saved
 ```
 
-### 6.1 <a name="run-tests"></a> Create yml-file for commit-stage (run unit tests in Concourse)
+### 6.1 <a name="run-tests"></a> Create files for commit-stage (run unit tests in Concourse)
 
 create a new folder __ci__ and a new __ci/commit_build.yml__ file and add the following to the file:
 ```yml
@@ -407,7 +409,7 @@ Finished in 0.3907 seconds (files took 1.91 seconds to load)
 succeeded
 ```
 
-### 6.2 <a name="deploy-stage"></a> Create yml-file for deploy-stage (deploy app to Heroku)
+### 6.2 <a name="deploy-stage"></a> Create files for deploy-stage (deploy app to Heroku)
 
 create a new __ci/deploy_build.yml__ file and add the following to the file:
 ```yml
@@ -419,10 +421,10 @@ image_resource:
     repository: concourse/bosh-cli
 
 inputs:
-- name: task_01_concourse
+- name: git-repository
 
 run:
-  path: ./task_01_concourse/ci/deploy.sh
+  path: git-repository/ci/deploy.sh
 ```
 
 create a new __ci/deploy.sh__ file and add the following to the file:
@@ -453,53 +455,128 @@ heroku_token: your-heroku-token
 ```
 >Note: You can find a token to use on the “Account” page (in the “API Key” section) on your dashboard
 
+### 6.3 <a name="heroku"></a> Configure app for Heroku deployment
 
-### 6.3 <a name="start-pipeline"></a> Start a pipeline
+Heroku requires postgres instead of sqlite3 - if you created your Rails-App with sqlite3, you have to add the following to your Gemfile:
+```ruby
+group :production do
+  gem 'pg'
+end
+```
+>Explanation: Now postgres will be used for production!
+
+Heroku throws a warning if you did not specify the ruby-version in your Gemfile, if you didn't do that already add:
+```ruby
+ruby '2.3.3'
+```
+>Note: The ruby-version has to match the version you are using, otherwise an error will be thrown!
+
+Heroku requires a so called Procfile (= a mechanism for declaring what commands are run by your application’s dynos on the Heroku platform). Create a file named "Procfile" in your root directory and add:
+```Procfile
+web: bundle exec puma -t 5:5 -p ${PORT:-3000} -e ${RACK_ENV:-production}
+```
+
+Now create a Dockerfile in your root directory and add the following:
+```Dockerfile
+FROM ruby:2.3.3
+RUN apt-get update -qq
+RUN apt-get install -y build-essential libpq-dev nodejs
+RUN echo "deb http://ftp.us.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list \
+         && apt-get update \
+         && apt-get install -y git \
+         && apt-get clean all
+
+RUN mkdir /usr/src/app
+WORKDIR /usr/src/app
+
+COPY Gemfile* /usr/src/app/
+
+RUN gem install bundler
+RUN bundle install
+
+COPY . /usr/src/app
+
+RUN RAILS_ENV=production
+
+CMD ["bundle", "exec", "ruby", "app.rb", "-o", "0.0.0.0"]
+```
+
+After the app was successfully deployed to Heroku, we have to migrate the db, in order to be able to do that we need to add the heroku-repository as remote repository:
+```shell
+$ heroku git:remote -a <name-of-your-heroku-app>
+```
+>Note: You need to have the <a href="https://devcenter.heroku.com/articles/heroku-cli" target="_blank">Heroku Cli </a>installed on your system.
+
+### 6.4 <a name="start-pipeline"></a> Create a pipeline (wrap everything up
 
 create a __ci/pipeline.yml__ file and add the following to the file:
 ```yml
+---
 resources:
-- name: task_01_concourse
-  type: git
-  source:
-    uri: https://github.com/BiancaLeitner/task_01_concourse.git
-    branch: master
+  - name: git-repository
+    type: git
+    source:
+      uri: "https://github.com/BiancaLeitner/task_01_concourse.git"
 
 jobs:
-- name: test-app
+- name: commit-stage
   plan:
-  - get: task_01_concourse
-    # any new version will trigger the job
+  - get: git-repository
     trigger: true
-  - task: tests
-    file: task_01_concourse/build.yml
+  - task: run-tests
+    file: git-repository/ci/commit_build.yml
+   
+- name: deploy-stage
+  serial: true
+  plan:
+  - get: git-repository
+    trigger: true
+    passed: [commit-stage]
+  - task: deploy-heroku
+    params:
+      HEROKU_EMAIL: {{heroku_email}}
+      HEROKU_TOKEN: {{heroku_token}}
+    file: git-repository/ci/deploy_build.yml
 ```
 >Explanation: Pipelines are built up from resources and jobs. Resources are external, versioned things such as Git repositories or S3 buckets and jobs are a grouping of resources and tasks that actually do the work in the system.
 
 upload the pipeline:
 ```shell
-$ fly -t ci set-pipeline -p task_01_concourse -c ci/pipeline.yml
+$ fly set-pipeline -t ci -p ci-pipe -c ci/pipeline.yml --load-vars-from ci/credentials.yml
 ```
 
 *output*
 ```shell
 resources:
-  resource task_01_concourse has been added:
-    name: task_01_concourse
+  resource git-repository has been added:
+    name: git-repository
     type: git
     source:
-      branch: master
       uri: https://github.com/BiancaLeitner/task_01_concourse.git
 
 jobs:
-  job test-app has been added:
-    name: test-app
+  job commit-stage has been added:
+    name: commit-stage
     plan:
-    - get: task_01_concourse
+    - get: git-repository
       trigger: true
-    - task: tests
-      file: task_01_concourse/build.yml
+    - task: run-tests
+      file: git-repository/ci/commit_build.yml
 
+  job deploy-stage has been added:
+    name: deploy-stage
+    serial: true
+    plan:
+    - get: git-repository
+      passed:
+      - commit-stage
+      trigger: true
+    - task: deploy-heroku
+      file: git-repository/ci/deploy_build.yml
+      params:
+        HEROKU_EMAIL: <here-is-your-heroku-email>
+        HEROKU_TOKEN: <here-is-your-heroku-token>
+      
 apply configuration? [yN]:
 ```
 --> answer with y
@@ -507,7 +584,7 @@ apply configuration? [yN]:
 *output*
 ```shell
 pipeline created!
-you can view your pipeline here: http://192.168.99.100:8080/teams/main/pipelines/task_01_concourse
+you can view your pipeline here: http://192.168.99.100:8080/teams/main/pipelines/ci-pipe
 
 the pipeline is currently paused. to unpause, either:
   - run the unpause-pipeline command
@@ -515,3 +592,9 @@ the pipeline is currently paused. to unpause, either:
 ```
 >Note: If you are not yet logged in the Concourse-Web-UI do so - otherwise you won't be able to see the pipeline!
 
+When the app was successfully deployed to Heroku, we have to install the db:
+```shell
+$ heroku run rake db:migrate
+```
+
+__THE END - Cheers__ 🍺
