@@ -27,4 +27,4 @@
 /docker-compose.ymlcredentials.yml
 
 # Ignore credentials
-/_ci/credentials.yml
+/ci/credentials.yml
